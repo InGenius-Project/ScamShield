@@ -34,16 +34,16 @@
 - docker
     ```bash
     docker build -t bert-model .
-    docker run -i bert-model
+    docker run -i bert-model --gpus all
     ```
     > Dockerfile will create a volume to store the trained model.
     - Specify docker volume
     ```bash
-    docker run -i bert-model -v your/volume/path:/app/result
+    docker run -i bert-model --gpus all -v your/volume/path:/app/result
     ```
     or 
     ```bash
-    docker run -i bert-model -v .:/app
+    docker run -i bert-model --gpus all -v .:/app
     ```
     so you can change dataset and get result models more convenient.
 ## Optional Python Arguments
