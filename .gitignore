@@ -1,3 +1,4 @@
 result/*
 !result/.gitkeep
 __pycache__
+temp
