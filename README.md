@@ -1,9 +1,9 @@
 # Bert Sequence Classification Model
 ## Setup
-> If you use docker, no need to setup.
+> By using docker, you still need to install nvidia driver & some container toolkit 
 1. Install requirements
     ```bash
-    pip install -r requirements.txt
+    python setup.py
     ```
 2. <span style="color:red">(optional)</span> Enable GPU acceleration (cuda toolkit & CuDNN).  
     - Windows 
@@ -22,6 +22,28 @@
         ```
         2. Get the cuDNN on [Nvidia official website](https://developer.nvidia.com/cudnn)
         3. May need to reboot your system
+    - Docker [Installation Guide](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+        1. Install Nvidia Container toolkit
+            ```bash
+            curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+            && curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+                sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+                sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+            && \
+                sudo apt-get update
+            ```
+            ```bash
+            sudo apt-get install -y nvidia-container-toolkit
+            ```
+        2. Configuring docker
+            ```bash
+            sudo nvidia-ctk runtime configure --runtime=docker
+            ```
+        3. Restart the Docker daemon
+            ```bash
+            sudo systemctl restart docker
+            ```
+    - If you are using WSL for docker, please refer [this](https://docs.nvidia.com/cuda/wsl-user-guide/index.html) to get done with your GPU driver.
 ## How to use
 - windows
     ```powershell

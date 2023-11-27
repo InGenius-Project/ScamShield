@@ -19,7 +19,7 @@ PATH_TO_SAVE_MODEL = os.path.join(TRAINNING_ARGS_OUTPUT_DIR, SAVE_MODEL_NAME)
 MODEL_NAME = "bert-base-chinese"
 
 ## ===== Trainning Settings ===== ##
-NUM_TRAIN_EPOCH = 3
+NUM_TRAIN_EPOCH = 100
 DEVICE_TRAIN_BATCH = 16
 
 class BertSC:
@@ -43,6 +43,15 @@ class BertSC:
         self.train_dataset = self._transform_to_dataset(texts, labels)
         self.training_arguments = training_arguments
         self.trainer = None
+        self._apply_to_cuda()
+        print("[CUDA] ", self.is_cuda_avaliable())
+    
+    def is_cuda_avaliable(self) -> bool:
+        return torch.cuda.is_available()
+    
+    def _apply_to_cuda(self) -> None:
+        device = "cuda:0" if self.is_cuda_avaliable() else "cpu"
+        self.model = self.model.to(device)
         
     def _transform_to_dataset(self, texts: list[str], labels: list[any]) -> "BertSC.Dataset":
         """Transform the text list & label list to Dataset"""
