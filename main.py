@@ -3,6 +3,8 @@ from transformers import AutoTokenizer, BertForSequenceClassification, Trainer, 
 import torch
 import argparse
 
+from utils.color_print import head_print
+
 parser = argparse.ArgumentParser(description='optional arg')
 parser.add_argument('-d', '--dataset', help='dataset path.')
 parser.add_argument('-o', '--output', help='model saving path after trained.')
@@ -12,15 +14,16 @@ dataset_path = args.dataset
 mode_save_path = args.output
 
 ## ===== Config ===== ##
-DATASET_FILE_PATH = dataset_path if dataset_path is not None else "template_dataset.json" 
+DATASET_FILE_PATH = dataset_path if dataset_path is not None else "assets/template_dataset.json" 
 TRAINNING_ARGS_OUTPUT_DIR = "result"
 SAVE_MODEL_NAME = mode_save_path if mode_save_path is not None else "test_model" 
 PATH_TO_SAVE_MODEL = os.path.join(TRAINNING_ARGS_OUTPUT_DIR, SAVE_MODEL_NAME)
 MODEL_NAME = "bert-base-chinese"
 
 ## ===== Trainning Settings ===== ##
-NUM_TRAIN_EPOCH = 100
+NUM_TRAIN_EPOCH = 10
 DEVICE_TRAIN_BATCH = 16
+
 
 class BertSC:
     class Dataset(torch.utils.data.Dataset):
@@ -44,7 +47,6 @@ class BertSC:
         self.training_arguments = training_arguments
         self.trainer = None
         self._apply_to_cuda()
-        print("[CUDA] ", self.is_cuda_avaliable())
     
     def is_cuda_avaliable(self) -> bool:
         return torch.cuda.is_available()
@@ -88,6 +90,9 @@ def main() -> None:
     if not os.path.isfile(DATASET_FILE_PATH):
         raise Exception(f"[ERROR] {DATASET_FILE_PATH} not exist!")
     
+    ## ===== Info Print ===== ##
+    head_print("[CUDA SUPPORT] ", torch.cuda.is_available())
+    
     ## ===== Import Train Data ===== ##
     train_raw_data = get_data_json(DATASET_FILE_PATH)
     texts = [x[0] for x in train_raw_data]
@@ -108,6 +113,7 @@ def main() -> None:
         labels = labels,
         training_arguments = training_args
     )
+    
     bsc.train()
     bsc.save_model(PATH_TO_SAVE_MODEL)
 
