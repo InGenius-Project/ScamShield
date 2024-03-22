@@ -2,3 +2,7 @@ result/*
 !result/.gitkeep
 __pycache__
 temp
+.venv
+poetry.lock
+*.sqlite
+assets/*

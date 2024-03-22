@@ -1,6 +1,8 @@
-import json, os
+import json
+import os
 from transformers import AutoTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 import torch
+import torch.utils.data
 import argparse
 
 from utils.color_print import head_print
@@ -40,12 +42,16 @@ class BertSC:
         def __len__(self):
             return len(self.labels)
         
-    def __init__(self, model_name: str, texts: list[str], labels: list[int], training_arguments: TrainingArguments = None) -> None:
+    def __init__(self, model_name: str, texts: list[str], labels: list[int], training_arguments: TrainingArguments) -> None:
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.model = BertForSequenceClassification.from_pretrained(model_name, num_labels=self._get_num_labels(labels))
         self.train_dataset = self._transform_to_dataset(texts, labels)
         self.training_arguments = training_arguments
-        self.trainer = None
+        self.trainer: Trainer = Trainer (
+            model= self.model, # type: ignore
+            args = self.training_arguments,
+            train_dataset = self.train_dataset
+        )
         self._apply_to_cuda()
     
     def is_cuda_avaliable(self) -> bool:
@@ -53,9 +59,9 @@ class BertSC:
     
     def _apply_to_cuda(self) -> None:
         device = "cuda:0" if self.is_cuda_avaliable() else "cpu"
-        self.model = self.model.to(device)
+        self.model = self.model.to(device) # type: ignore
         
-    def _transform_to_dataset(self, texts: list[str], labels: list[any]) -> "BertSC.Dataset":
+    def _transform_to_dataset(self, texts: list[str], labels: list[int]) -> "BertSC.Dataset":
         """Transform the text list & label list to Dataset"""
         encodings = self.tokenizer(texts, truncation=True, padding=True)
         dataset = BertSC.Dataset(encodings, labels)
@@ -65,23 +71,14 @@ class BertSC:
         "Get the number of labels by find the maximum. (label range)"
         return max(labels) + 1
 
-    def train(self, training_arguments: TrainingArguments = None) -> None:
+    def train(self) -> None:
         """Start training data"""
-        if training_arguments is not None:
-            self.training_arguments = training_arguments
-        
-        self.trainer = Trainer (
-            model= self.model,
-            args = self.training_arguments,
-            train_dataset = self.train_dataset
-        )
-        
         self.trainer.train()
         
     def save_model(self, save_path: str) -> None:
         self.trainer.save_model(save_path)
 
-def get_data_json(filename: str) -> any:
+def get_data_json(filename: str):
     with open(filename, "r", encoding='UTF-8') as file:
         data_json = json.load(file)
     return data_json
